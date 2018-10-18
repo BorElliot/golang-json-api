@@ -12,6 +12,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type Error struct {
+	Errcode string `json:"errcode"`
+	Errmsg  string `json:"errmsg"`
+}
+
 type Article struct {
 	ID        int    `json:"id"`
 	Title     string `json:"title"`
@@ -71,7 +76,10 @@ func returnSingleArticle(w http.ResponseWriter, r *http.Request) {
 	var article Article
 	err = db.QueryRow("SELECT id, title, content, created_at, updated_at FROM articles WHERE id = ?", id).Scan(&article.ID, &article.Title, &article.Content, &article.CreatedAt, &article.UpdatedAt)
 	if err != nil {
-		panic(err.Error())
+		errResponse := Error{Errcode: "ER1001", Errmsg: "查无数据"}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(errResponse)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -80,8 +88,9 @@ func returnSingleArticle(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	myRouter := mux.NewRouter().StrictSlash(true)
+	myRouter.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/"))))
 	myRouter.HandleFunc("/", homePage)
 	myRouter.HandleFunc("/all", returnAllArticles)
 	myRouter.HandleFunc("/article/{id}", returnSingleArticle)
-	log.Fatal(http.ListenAndServe(":10001", myRouter))
+	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
