@@ -76,7 +76,7 @@ func returnSingleArticle(w http.ResponseWriter, r *http.Request) {
 	var article Article
 	err = db.QueryRow("SELECT id, title, content, created_at, updated_at FROM articles WHERE id = ?", id).Scan(&article.ID, &article.Title, &article.Content, &article.CreatedAt, &article.UpdatedAt)
 	if err != nil {
-		errResponse := Error{Errcode: "ER1001", Errmsg: "查无数据"}
+		errResponse := Error{Errcode: "ER1001", Errmsg: "No Data Exists"}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(errResponse)
 		return
