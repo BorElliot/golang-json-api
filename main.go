@@ -52,6 +52,8 @@ func returnAllArticles(w http.ResponseWriter, r *http.Request) {
 
 		articles = append(articles, article)
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(articles)
 }
 
@@ -59,16 +61,21 @@ func returnSingleArticle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 
-	articles := Articles{
-		Article{ID: 1, Title: "Hello", Content: "Article Content"},
-		Article{ID: 2, Title: "Hello 2", Content: "Article Content"},
+	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/golang")
+
+	if err != nil {
+		log.Printf(err.Error())
+	}
+	defer db.Close()
+
+	var article Article
+	err = db.QueryRow("SELECT id, title, content, created_at, updated_at FROM articles WHERE id = ?", id).Scan(&article.ID, &article.Title, &article.Content, &article.CreatedAt, &article.UpdatedAt)
+	if err != nil {
+		panic(err.Error())
 	}
 
-	for _, v := range articles {
-		if v.ID == id {
-			json.NewEncoder(w).Encode(v)
-		}
-	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(article)
 }
 
 func main() {
