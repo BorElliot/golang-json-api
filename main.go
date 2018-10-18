@@ -71,14 +71,10 @@ func returnSingleArticle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleRequests() {
+func main() {
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.HandleFunc("/", homePage)
 	myRouter.HandleFunc("/all", returnAllArticles)
 	myRouter.HandleFunc("/article/{id}", returnSingleArticle)
 	log.Fatal(http.ListenAndServe(":10001", myRouter))
-}
-
-func main() {
-	handleRequests()
 }
